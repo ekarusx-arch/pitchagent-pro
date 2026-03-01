@@ -24,8 +24,8 @@ export const metadata: Metadata = {
     default: "PitchAgent Pro - AI-Powered Cold Email Automation",
     template: "%s | PitchAgent Pro"
   },
-  description: "PitchAgent Pro uses 4 specialized AI agents to analyze your target's website and craft hyper-personalized cold email pitches in under 3 minutes. Built for B2B closers.",
-  keywords: ["AI cold email", "sales automation", "B2B sales", "sales AI", "PitchAgent", "cold outreach", "AI agents"],
+  description: "피치에이전트 프로(PitchAgent Pro)는 4개의 전문 AI 에이전트를 통해 타겟 웹사이트를 분석하고, 3분 안에 초개인화된 콜드 이메일 피치를 작성합니다. B2B 영업 사원을 위한 최강의 자동화 도구입니다.",
+  keywords: ["AI 콜드 이메일", "영업 자동화", "B2B 영업", "세일즈 AI", "PitchAgent", "콜드 아웃리치", "AI 에이전트", "초개인화 이메일"],
   authors: [{ name: "PitchAgent Team" }],
   robots: "index, follow",
   openGraph: {
