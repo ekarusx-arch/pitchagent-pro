@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617; /* slate-950 */
+  --foreground: #f8fafc; /* slate-50 */
+  --primary: #6366f1; /* indigo-500 */
+  --primary-foreground: #ffffff;
+  --accent: #8b5cf6; /* violet-500 */
+  --accent-glow: rgba(139, 92, 246, 0.35);
+  --primary-glow: rgba(99, 102, 241, 0.4);
+  --border: #1e293b; /* slate-800 */
+  --card: #0f172a; /* slate-900 */
+  --card-foreground: #f8fafc;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle dot grid background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@utility text-glow {
+  text-shadow: 0 0 30px var(--primary-glow), 0 0 60px var(--accent-glow);
+}
+
+@utility box-glow {
+  box-shadow: 0 0 30px -5px var(--accent-glow);
+}
+
+@utility btn-glow {
+  box-shadow: 0 0 30px -5px var(--primary-glow), 0 4px 24px -4px rgba(99,102,241,0.3);
+}
+
+/* Shimmer keyframe for badge */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@utility badge-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(99,102,241,0.15) 0%,
+    rgba(139,92,246,0.25) 50%,
+    rgba(99,102,241,0.15) 100%
+  );
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
 }
