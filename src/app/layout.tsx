@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     apple: "/apple-icon.png",
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    google: "F2-pKIeQYZIi3Rnm523tIFaNwSkTzNynZrV0H17NCUo", // 대현님! 구글 서치 콘솔에서 복사한 영문자/숫자 조합을 이 따옴표 안에 넣으세요!
   },
 };
 
