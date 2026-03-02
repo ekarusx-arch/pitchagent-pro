@@ -133,19 +133,21 @@ export async function POST(req: Request) {
         // 4. Supabase DB 기록 (History) 및 Credit 차감
         try {
             // [HISTORY SAVE] 'pitches' 테이블에 저장
-            await supabase.from("pitches").insert({
+            const { error: insertError } = await supabase.from("pitches").insert({
                 user_id: user.id,
                 target_url: targetUrl,
                 context: context,
                 pitch_text: object.pitch,
                 insights: object.insights
             });
+            if (insertError) throw insertError;
 
             // [CREDIT DEDUCTION] 크레딧 차감 (10 credits per generation)
-            await supabase
+            const { error: updateError } = await supabase
                 .from("profiles")
                 .update({ credits: (profile.credits || 0) - 10 })
                 .eq("id", user.id);
+            if (updateError) throw updateError;
 
         } catch (dbError) {
             console.error("Critical Post-Generation Error (DB/Credits):", dbError);
