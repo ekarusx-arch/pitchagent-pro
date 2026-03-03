@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import PaddleInit from "@/components/PaddleInit";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,9 +56,10 @@ export const metadata: Metadata = {
     apple: "/apple-icon.png",
   },
   verification: {
-    google: "F2-pKIeQYZIi3Rnm523tIFaNwSkTzNynZrV0H17NCUo", // 대현님! 구글 서치 콘솔에서 복사한 영문자/숫자 조합을 이 따옴표 안에 넣으세요!
+    google: "F2-pKIeQYZIi3Rnm523tIFaNwSkTzNynZrV0H17NCUo",
   },
 };
+
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
@@ -88,7 +90,9 @@ export default function RootLayout({
           </>
         )}
         {children}
+        <PaddleInit />
       </body>
+
     </html>
   );
 }

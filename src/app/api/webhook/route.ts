@@ -1,100 +1,117 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import Stripe from "stripe";
+import { paddle } from "@/lib/paddle";
 
 export async function POST(req: Request) {
     const body = await req.text();
-    const signature = req.headers.get("stripe-signature");
-
-    let event: Stripe.Event;
+    const signature = req.headers.get("paddle-signature") || "";
 
     try {
-        if (!signature) {
-            console.warn("결제 웹훅 테스트 실패: stripe-signature 헤더가 없습니다.");
-            return new NextResponse("Webhook Error: Missing signature", { status: 400 });
+        const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
+
+        if (!webhookSecret) {
+            console.warn("PADDLE_WEBHOOK_SECRET is missing. Skipping signature verification for local testing.");
+            // In a real production environment, you MUST verify the signature.
+            // For now, we'll parse the body directly if secret is missing.
+            const event = JSON.parse(body);
+            return await handlePaddleEvent(event);
         }
 
-        // STRIPE_WEBHOOK_SECRET이 환경 변수에 설정되어 있어야 서명 검증이 통과됩니다.
-        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-        if (!webhookSecret) {
-            console.warn("STRIPE_WEBHOOK_SECRET이 없습니다. 로컬 테스트 용도로 서명 검증을 우회합니다.");
-            event = JSON.parse(body) as Stripe.Event;
-        } else {
-            event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+        const event = paddle.webhooks.unmarshal(body, webhookSecret, signature);
+        if (!event) {
+            return new NextResponse("Invalid webhook signature", { status: 400 });
         }
+
+        return await handlePaddleEvent(event);
     } catch (error: any) {
-        console.error(`Webhook Signature Verification Error: ${error.message}`);
+        console.error(`Paddle Webhook Error: ${error.message}`);
         return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
     }
+}
 
-    // Handle the Stripe events
-    switch (event.type) {
-        case "checkout.session.completed": {
-            const session = event.data.object as Stripe.Checkout.Session;
-            console.log(`[Stripe Webhook] 결제 세션 완료: ${session.id}`);
+async function handlePaddleEvent(event: any) {
+    const { createAdminClient } = await import("@/utils/supabase/admin");
+    const supabase = await createAdminClient();
 
-            const { createAdminClient } = await import("@/utils/supabase/admin");
-            const supabase = await createAdminClient();
+    // transaction.completed: One-time payments or initial subscription payments
+    if (event.eventType === "transaction.completed") {
+        const transaction = event.data;
+        const customerEmail = transaction.customer?.email || transaction.details?.customer_email || transaction.customerEmail;
+        const customData = transaction.customData || {};
+        const creditsToPass = parseInt(customData.credits || "0", 10);
+        const planName = customData.planName;
 
-            // 1. 고객 이메일을 통해 user_id 식별
-            const userEmail = session.customer_details?.email;
-            if (!userEmail) break;
-
+        if (customerEmail) {
             const { data: userData } = await supabase
                 .from("profiles")
                 .select("id, credits")
-                .eq("email", userEmail)
+                .eq("email", customerEmail)
                 .single();
 
-            if (!userData) {
-                console.error(`User with email ${userEmail} not found in profiles.`);
-                break;
+            if (userData) {
+                const updateData: any = {
+                    credits: (userData.credits || 0) + creditsToPass,
+                };
+
+                if (planName) {
+                    updateData.subscription_plan = planName;
+                    updateData.is_pro = true;
+                }
+
+                // Store paddle customer ID for future updates/cancellations
+                if (transaction.customerId || transaction.customer_id) {
+                    updateData.paddle_customer_id = transaction.customerId || transaction.customer_id;
+                }
+
+                await supabase.from("profiles").update(updateData).eq("id", userData.id);
+                console.log(`[Paddle Webhook] Transaction completed for ${customerEmail}: +${creditsToPass} credits, Plan: ${planName}`);
             }
-
-            // 2. Metadata에서 구매한 크레딧 또는 플랜 정보 추출
-            const creditsToPass = parseInt(session.metadata?.credits || "0", 10);
-            const planName = session.metadata?.planName;
-
-            // 3. 크레딧 합산 및 플랜 업데이트
-            const updateData: any = {
-                credits: (userData.credits || 0) + creditsToPass,
-            };
-
-            if (planName) {
-                updateData.subscription_plan = planName;
-                updateData.is_pro = true;
-            }
-
-            const { error: updateError } = await supabase
-                .from("profiles")
-                .update(updateData)
-                .eq("id", userData.id);
-
-            if (updateError) {
-                console.error(`Failed to update profile for ${userEmail}:`, updateError);
-            } else {
-                console.log(`Successfully updated credits (+${creditsToPass}) and plan (${planName}) for ${userEmail}`);
-            }
-            break;
         }
-
-        case "customer.subscription.deleted": {
-            const subscription = event.data.object as Stripe.Subscription;
-            console.log(`[Stripe Webhook] 구독 해지됨: ${subscription.id}`);
-
-            const { createAdminClient } = await import("@/utils/supabase/admin");
-            const supabase = await createAdminClient();
-
-            // 고객 ID로 사용자 식별 (실제로는 Stripe Customer ID <-> User ID 매핑 테이블 추천)
-            // 여기서는 단순 데모를 위해 is_pro 만 끕니다.
-            // await supabase.from("profiles").update({ is_pro: false }).eq("stripe_customer_id", subscription.customer);
-            break;
-        }
-
-        default:
-            console.log(`[Stripe Webhook] 처리되지 않은 이벤트 타입: ${event.type}`);
     }
 
-    // 처리 성공 응답
-    return NextResponse.json({ received: true });
+    // subscription.updated: Plan changes
+    if (event.eventType === "subscription.updated") {
+        const subscription = event.data;
+        // In subscription.updated, custom data might be in different places depending on version
+        const customData = subscription.customData || {};
+        const planName = customData.planName;
+
+        // Find user by customerId or email
+        const customerId = subscription.customerId;
+
+        const { data: userData } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("paddle_customer_id", customerId)
+            .single();
+
+        if (userData && planName) {
+            await supabase.from("profiles").update({
+                subscription_plan: planName,
+                is_pro: true
+            }).eq("id", userData.id);
+            console.log(`[Paddle Webhook] Subscription updated for customer ${customerId}: Plan -> ${planName}`);
+        }
+    }
+
+    // subscription.canceled: Membership end
+    if (event.eventType === "subscription.canceled") {
+        const subscription = event.data;
+        const customerId = subscription.customerId;
+
+        const { data: userData } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("paddle_customer_id", customerId)
+            .single();
+
+        if (userData) {
+            await supabase.from("profiles").update({
+                subscription_plan: "Free",
+                is_pro: false
+            }).eq("id", userData.id);
+            console.log(`[Paddle Webhook] Subscription canceled for customer ${customerId}`);
+        }
+    }
+
+    return NextResponse.json({ success: true });
 }

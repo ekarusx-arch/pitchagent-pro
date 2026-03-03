@@ -147,7 +147,7 @@ export default function Home() {
               <div className="w-5 h-5 rounded-full bg-slate-700" /> NOTION
             </div>
             <div className="flex items-center gap-2 font-bold text-lg text-slate-400">
-              <div className="w-5 h-5 rotate-45 bg-slate-700" /> STRIPE
+              <div className="w-5 h-5 rotate-45 bg-slate-700" /> PADDLE
             </div>
             <div className="flex items-center gap-2 font-bold text-lg text-slate-400">
               <div className="w-5 h-5 rounded-sm bg-slate-700" /> LINEAR

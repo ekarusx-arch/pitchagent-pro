@@ -1,50 +1,32 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req: Request) {
     try {
-        const { priceId, mode = "subscription", planName, amount, credits } = await req.json();
+        const { priceId, planName, mode = "subscription", credits } = await req.json();
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        // 현재 요청의 URL 인스턴스를 통해 origin 도출
-        const url = new URL(req.url);
-        const origin = `${url.protocol}//${url.host}`;
-
-        // Dummy 키를 사용할 경우의 방어 로직 (MVP/데모용)
-        if (process.env.STRIPE_SECRET_KEY === undefined || process.env.STRIPE_SECRET_KEY === "sk_test_dummy") {
-            console.warn("STRIPE_SECRET_KEY is missing. Redirecting as simulated checkout.");
-            return NextResponse.json({
-                url: `${origin}/dashboard?success=true&simulated=true&plan=${planName || 'standard'}`
-            });
+        if (!user) {
+            console.warn("[Checkout] No session found. Returning 401.");
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // Stripe Checkout Session 생성
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items: [
-                {
-                    price: priceId, // Stripe Dashboard에서 생성한 실재 Price ID 필요
-                    quantity: 1,
-                },
-            ],
-            mode: mode as "subscription" | "payment",
-            metadata: {
+        // Return the configuration for Paddle.js
+        return NextResponse.json({
+            items: [{ priceId, quantity: 1 }],
+            customData: {
+                userId: user.id,
                 planName,
-                credits: credits?.toString() || "0",
+                credits: credits?.toString() || "0"
             },
-            success_url: `${origin}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${origin}/dashboard?canceled=true`,
+            customerEmail: user.email
         });
-
-        if (session.url) {
-            return NextResponse.json({ url: session.url });
-        }
-
-        return NextResponse.json({ error: "No session url returned from Stripe." }, { status: 500 });
     } catch (err: any) {
-        console.error("Error creating checkout session:", err);
+        console.error("Error preparing checkout:", err);
         return NextResponse.json(
-            { error: err.message || "Failed to create checkout session" },
-            { status: err.statusCode || 500 }
+            { error: err.message || "Failed to prepare checkout" },
+            { status: 500 }
         );
     }
 }

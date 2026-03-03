@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PADDLE_PLANS } from "@/lib/paddle-config";
 import {
     Copy,
     Sparkles,
@@ -106,6 +107,35 @@ export default function DashboardPage() {
 
     useEffect(() => {
         fetchProfile();
+
+        // Initialize Paddle
+        const initPaddle = () => {
+            // @ts-ignore
+            if (typeof Paddle !== "undefined") {
+                try {
+                    const isSandbox = process.env.NEXT_PUBLIC_PADDLE_SANDBOX === 'true';
+                    const token = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
+
+                    console.log("Paddle init attempt - Env:", isSandbox ? 'sandbox' : 'production', "Token present:", !!token);
+
+                    // @ts-ignore
+                    Paddle.Environment.set(isSandbox ? 'sandbox' : 'production');
+                    // @ts-ignore
+                    Paddle.Initialize({
+                        token: token || "",
+                    });
+                    console.log("Paddle successfully initialized in DashboardPage");
+                } catch (e) {
+                    console.error("Paddle init error:", e);
+                }
+            } else {
+                console.warn("Paddle.js script not loaded yet...");
+            }
+        };
+
+        // Try initializing after a short delay to ensure script tag is processed
+        const timer = setTimeout(initPaddle, 1000);
+        return () => clearTimeout(timer);
     }, []);
 
     const fetchProfile = async () => {
@@ -346,9 +376,30 @@ export default function DashboardPage() {
                 body: JSON.stringify(options)
             });
             const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
+
+            if (data.items) {
+                // @ts-ignore
+                if (typeof Paddle !== "undefined") {
+                    console.log("Opening Paddle with items:", data.items);
+                    // @ts-ignore
+                    Paddle.Checkout.open({
+                        items: data.items,
+                        customData: data.customData,
+                        customer: {
+                            email: data.customerEmail
+                        },
+                        settings: {
+                            displayMode: "overlay",
+                            theme: "dark",
+                            locale: "en"
+                        }
+                    });
+                } else {
+                    console.error("Paddle is undefined in handleCheckout");
+                    alert("Paddle is not loaded yet. Please try again in a moment.");
+                }
             } else {
+                console.error("API Response missing items:", data);
                 alert("Error initializing checkout: " + (data.error || "Unknown error"));
             }
         } catch (error) {
@@ -904,7 +955,7 @@ export default function DashboardPage() {
                                             <button disabled className="w-full py-4 rounded-2xl bg-slate-800 text-slate-500 font-bold cursor-not-allowed">Current Plan</button>
                                         ) : (
                                             <button
-                                                onClick={() => handleCheckout({ priceId: "price_starter", planName: "Starter", mode: "subscription" })}
+                                                onClick={() => handleCheckout({ priceId: PADDLE_PLANS.STARTER.id, planName: PADDLE_PLANS.STARTER.name, mode: "subscription" })}
                                                 className="w-full py-4 rounded-2xl bg-card border border-border hover:bg-slate-800 text-white font-bold transition-all"
                                             >
                                                 Get Started
@@ -943,7 +994,7 @@ export default function DashboardPage() {
                                             <button disabled className="w-full py-4 rounded-2xl bg-green-500/10 text-green-500 border border-green-500/50 font-bold cursor-not-allowed">Current Plan</button>
                                         ) : (
                                             <button
-                                                onClick={() => handleCheckout({ priceId: "price_pro", planName: "Pro Agent", mode: "subscription" })}
+                                                onClick={() => handleCheckout({ priceId: PADDLE_PLANS.PRO.id, planName: PADDLE_PLANS.PRO.name, mode: "subscription" })}
                                                 className="w-full py-4 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold transition-all shadow-lg shadow-primary/20"
                                             >
                                                 Upgrade Now
@@ -975,7 +1026,7 @@ export default function DashboardPage() {
                                             <button disabled className="w-full py-4 rounded-2xl bg-slate-800 text-slate-500 font-bold cursor-not-allowed">Current Plan</button>
                                         ) : (
                                             <button
-                                                onClick={() => handleCheckout({ priceId: "price_scale", planName: "Scale", mode: "subscription" })}
+                                                onClick={() => handleCheckout({ priceId: PADDLE_PLANS.SCALE.id, planName: PADDLE_PLANS.SCALE.name, mode: "subscription" })}
                                                 className="w-full py-4 rounded-2xl bg-card border border-border hover:bg-slate-800 text-white font-bold transition-all"
                                             >
                                                 Contact Sales
@@ -987,7 +1038,7 @@ export default function DashboardPage() {
                                 <div className="mt-16 flex items-center gap-8 justify-center grayscale opacity-50">
                                     <ShieldCheck className="w-6 h-6" />
                                     <div className="h-6 w-px bg-slate-800" />
-                                    <span className="text-xs font-medium tracking-widest uppercase text-slate-500">Secure Stripe Checkout</span>
+                                    <span className="text-xs font-medium tracking-widest uppercase text-slate-500">Secure Paddle Checkout</span>
                                 </div>
                             </motion.div>
                         )}
@@ -1015,8 +1066,8 @@ export default function DashboardPage() {
                                             icon: Package,
                                             bgColor: "bg-indigo-500/10",
                                             textColor: "text-indigo-400",
-                                            priceId: "price_credits_5000",
-                                            credits: 5000,
+                                            priceId: PADDLE_PLANS.CREDITS_5000.id,
+                                            credits: PADDLE_PLANS.CREDITS_5000.credits,
                                             mode: "payment"
                                         },
                                         {
@@ -1026,7 +1077,7 @@ export default function DashboardPage() {
                                             icon: Search,
                                             bgColor: "bg-violet-500/10",
                                             textColor: "text-violet-400",
-                                            priceId: "price_super_agent",
+                                            priceId: PADDLE_PLANS.SUPER_AGENT.id,
                                             mode: "subscription"
                                         },
                                         {
@@ -1036,7 +1087,7 @@ export default function DashboardPage() {
                                             icon: Zap,
                                             bgColor: "bg-amber-500/10",
                                             textColor: "text-amber-400",
-                                            priceId: "price_fast_track",
+                                            priceId: PADDLE_PLANS.FAST_TRACK.id,
                                             mode: "subscription"
                                         },
                                         {
@@ -1046,7 +1097,7 @@ export default function DashboardPage() {
                                             icon: Copy,
                                             bgColor: "bg-emerald-500/10",
                                             textColor: "text-emerald-400",
-                                            priceId: "price_templates",
+                                            priceId: PADDLE_PLANS.TEMPLATE_PRO.id,
                                             mode: "payment"
                                         }
                                     ].map((item, i) => (
