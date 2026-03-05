@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   is_pro BOOLEAN DEFAULT FALSE,
   subscription_plan TEXT DEFAULT 'Free',
   context JSONB DEFAULT '[]',
+  paddle_customer_id TEXT,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 

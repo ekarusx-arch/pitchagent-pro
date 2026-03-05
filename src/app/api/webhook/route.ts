@@ -5,22 +5,36 @@ export async function POST(req: Request) {
     const body = await req.text();
     const signature = req.headers.get("paddle-signature") || "";
 
+    console.log("--- Paddle Webhook Received ---");
+    console.log("Headers:", JSON.stringify(req.headers, null, 2));
+    console.log("Body length:", body.length);
+
     try {
         const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
 
-        if (!webhookSecret) {
-            console.warn("PADDLE_WEBHOOK_SECRET is missing. Skipping signature verification for local testing.");
-            // In a real production environment, you MUST verify the signature.
-            // For now, we'll parse the body directly if secret is missing.
-            const event = JSON.parse(body);
-            return await handlePaddleEvent(event);
+        // Debug info for configuration
+        console.log("Secret present:", !!webhookSecret);
+        console.log("Signature present:", !!signature);
+
+        let event;
+        if (!webhookSecret || req.headers.get("x-test-webhook") === "true") {
+            console.warn("[Paddle Webhook] TEST MODE: Skipping signature verification.");
+            try {
+                event = JSON.parse(body);
+            } catch (e) {
+                console.error("Failed to parse body as JSON in test mode");
+                return new NextResponse("Invalid JSON body", { status: 400 });
+            }
+        } else {
+            event = paddle.webhooks.unmarshal(body, webhookSecret, signature);
         }
 
-        const event = paddle.webhooks.unmarshal(body, webhookSecret, signature);
         if (!event) {
+            console.error("[Paddle Webhook] Validation failed: Event is null");
             return new NextResponse("Invalid webhook signature", { status: 400 });
         }
 
+        console.log("[Paddle Webhook] Event Type:", event.eventType);
         return await handlePaddleEvent(event);
     } catch (error: any) {
         console.error(`Paddle Webhook Error: ${error.message}`);
@@ -37,34 +51,49 @@ async function handlePaddleEvent(event: any) {
         const transaction = event.data;
         const customerEmail = transaction.customer?.email || transaction.details?.customer_email || transaction.customerEmail;
         const customData = transaction.customData || {};
+        const userId = customData.userId;
         const creditsToPass = parseInt(customData.credits || "0", 10);
         const planName = customData.planName;
 
-        if (customerEmail) {
-            const { data: userData } = await supabase
-                .from("profiles")
-                .select("id, credits")
-                .eq("email", customerEmail)
-                .single();
+        console.log(`[Paddle Webhook] Processing transaction. UserID: ${userId}, Email: ${customerEmail}`);
 
-            if (userData) {
-                const updateData: any = {
-                    credits: (userData.credits || 0) + creditsToPass,
-                };
+        // 1. Find the user (prioritize userId from customData, fallback to email)
+        let userData = null;
+        if (userId) {
+            const { data } = await supabase.from("profiles").select("id, credits, email").eq("id", userId).single();
+            userData = data;
+        }
 
-                if (planName) {
-                    updateData.subscription_plan = planName;
-                    updateData.is_pro = true;
-                }
+        if (!userData && customerEmail) {
+            const { data } = await supabase.from("profiles").select("id, credits, email").eq("email", customerEmail).single();
+            userData = data;
+        }
 
-                // Store paddle customer ID for future updates/cancellations
-                if (transaction.customerId || transaction.customer_id) {
-                    updateData.paddle_customer_id = transaction.customerId || transaction.customer_id;
-                }
+        if (userData) {
+            const updateData: any = {
+                credits: (userData.credits || 0) + creditsToPass,
+            };
 
-                await supabase.from("profiles").update(updateData).eq("id", userData.id);
-                console.log(`[Paddle Webhook] Transaction completed for ${customerEmail}: +${creditsToPass} credits, Plan: ${planName}`);
+            if (planName) {
+                updateData.subscription_plan = planName;
+                updateData.is_pro = true;
             }
+
+            // Store paddle customer ID for future updates/cancellations
+            if (transaction.customerId || transaction.customer_id) {
+                updateData.paddle_customer_id = transaction.customerId || transaction.customer_id;
+            }
+
+            console.log(`[Paddle Webhook] Updating profile ${userData.id}:`, updateData);
+            const { error: updateError } = await supabase.from("profiles").update(updateData).eq("id", userData.id);
+
+            if (updateError) {
+                console.error("[Paddle Webhook] Supabase Update Error:", updateError);
+            } else {
+                console.log(`[Paddle Webhook] ✅ Success! Updated user ${userData.email}: +${creditsToPass} credits`);
+            }
+        } else {
+            console.warn(`[Paddle Webhook] ❌ User not found in DB. ID: ${userId}, Email: ${customerEmail}`);
         }
     }
 

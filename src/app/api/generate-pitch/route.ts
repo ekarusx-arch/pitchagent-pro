@@ -4,13 +4,13 @@ import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { scrapeWebsiteContent } from "@/lib/scraper";
 
-// Zod 스키마로 반환 타입을 명확히 지정하여 AI가 구조화된 JSON을 리턴하도록 강제합니다.
+// Force structured JSON from AI by specifying the schema.
 const pitchSchema = z.object({
     pitch: z.string().describe("The highly personalized generated cold email pitch."),
     insights: z.array(z.string()).describe("A list of 3-4 bullet points explaining why this pitch is effective and its psychological triggers."),
 });
 
-// Vercel 환경에서 오랜 시간 실행될 수 있도록 최대 응답 시간 허용 설정 (Hobby 플랜 10s - 60s 내외)
+// Allow longer execution for Vercel/Hobby limits
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
             });
         }
 
-        // 1. Target URL 내용을 실제로 Scraping 합니다. (Agentic Search Phase)
+        // 1. Scraping Target URL (Agentic Search Phase)
         let scrapedContent = "No website content available.";
         if (targetUrl) {
             scrapedContent = await scrapeWebsiteContent(targetUrl);
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
         let { data: profile } = await supabase
             .from("profiles")
-            .select("credits")
+            .select("credits, is_pro")
             .eq("id", user.id)
             .single();
 
@@ -69,11 +69,11 @@ export async function POST(req: Request) {
                 });
 
             if (!insertError) {
-                profile = { credits: 100 };
+                profile = { credits: 100, is_pro: false };
             }
         }
 
-        if (!profile || (profile.credits || 0) < 10) {
+        if (!profile?.is_pro && (!profile || (profile.credits || 0) < 10)) {
             return NextResponse.json({
                 success: false,
                 error: (profile ? "Insufficient credits. You need at least 10 credits to generate a pitch." : "Profile initialization failed. Please try again.")
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
             styleInstruction = "TONE: Balanced and professional. Use sophisticated vocabulary and a calm, authoritative voice.";
         }
 
-        // 2. 시스템 프롬프트 작성 (Multi-agent Persona)
+        // 2. Prepare System Prompt (Multi-agent Persona)
         const systemPrompt = `
     You are an elite B2B sales strategist and multi-agent AI system called "PitchAgent Pro".
     Your objective is to draft a short, highly-converting, and hyper-personalized pitch email.
@@ -110,9 +110,9 @@ export async function POST(req: Request) {
     Explain *why* you drafted the email this way. List 3-4 bullet points outlining the sales psychology (e.g., pain-point targeting, brevity, social proof).
     `;
 
-        // 3. 실제 AI 생성 호출 (gemini-2.5-flash 모델 권장 - 속도 및 퀄리티 밸런스 위함)
+        // 3. AI Generation call
         const { object } = await generateObject({
-            model: google("gemini-1.5-flash-latest"), // 텍스트 스크래핑 위주이므로 빠른 Flash 모델 사용
+            model: google("gemini-2.0-flash"), // Use the latest Gemini 2.0 Flash for superior performance and reasoning
             schema: pitchSchema,
             system: systemPrompt,
             prompt: `
@@ -130,9 +130,9 @@ export async function POST(req: Request) {
       `,
         });
 
-        // 4. Supabase DB 기록 (History) 및 Credit 차감
+        // 4. Record history and deduct credits
         try {
-            // [HISTORY SAVE] 'pitches' 테이블에 저장
+            // [HISTORY SAVE] Save to 'pitches' table
             const { error: insertError } = await supabase.from("pitches").insert({
                 user_id: user.id,
                 target_url: targetUrl,
@@ -142,12 +142,14 @@ export async function POST(req: Request) {
             });
             if (insertError) throw insertError;
 
-            // [CREDIT DEDUCTION] 크레딧 차감 (10 credits per generation)
-            const { error: updateError } = await supabase
-                .from("profiles")
-                .update({ credits: (profile.credits || 0) - 10 })
-                .eq("id", user.id);
-            if (updateError) throw updateError;
+            // [CREDIT DEDUCTION] Deduct 10 credits only for non-pro users
+            if (!profile?.is_pro) {
+                const { error: updateError } = await supabase
+                    .from("profiles")
+                    .update({ credits: (profile?.credits || 0) - 10 })
+                    .eq("id", user.id);
+                if (updateError) throw updateError;
+            }
 
         } catch (dbError) {
             console.error("Critical Post-Generation Error (DB/Credits):", dbError);

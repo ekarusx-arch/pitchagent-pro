@@ -569,8 +569,14 @@ export default function Home() {
             <Link href="/dashboard" className="text-xs text-slate-700 hover:text-slate-500 transition-colors">
               Sign in
             </Link>
-            <Link href="#pricing" className="text-xs text-slate-700 hover:text-slate-500 transition-colors">
-              Pricing
+            <Link href="/terms" className="text-xs text-slate-700 hover:text-slate-500 transition-colors">
+              Terms
+            </Link>
+            <Link href="/privacy" className="text-xs text-slate-700 hover:text-slate-500 transition-colors">
+              Privacy
+            </Link>
+            <Link href="/refund" className="text-xs text-slate-700 hover:text-slate-500 transition-colors">
+              Refund
             </Link>
           </div>
         </motion.div>

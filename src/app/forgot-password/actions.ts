@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 
 export async function resetPassword(formData: FormData) {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        console.warn("[Mock Mode] 가상으로 이메일 전송을 성공 처리합니다.");
+        console.warn("[Mock Mode] Simulating password reset email sent successfully.");
         redirect("/forgot-password?message=Mock email sent. In real app, check your email.");
     }
 

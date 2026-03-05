@@ -9,11 +9,11 @@ export default function CheckoutPage() {
     const router = useRouter();
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // 이 페이지는 Lean Startup Validation을 위한 가상의 결제 모달 모방입니다.
+    // This page is a mock for Lean Startup Validation.
     const handleSubscribe = (e: React.FormEvent) => {
         e.preventDefault();
         setIsProcessing(true);
-        // 가짜 결제 처리 딜레이 후 대시보드로 이동
+        // Simulate delay then redirect
         setTimeout(() => {
             router.push("/dashboard");
         }, 1500);

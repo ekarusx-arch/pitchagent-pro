@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 
 export async function login(formData: FormData) {
-    // 환경변수가 없을 때 로컬 UI 테스트를 위한 가상 통과 로직
+    // Mock mode for local UI testing
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         console.warn("[Mock Mode] Supabase URL/Key missing. Simulating successful login for UI testing.");
         redirect("/dashboard");
@@ -29,7 +29,7 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-    // 환경변수가 없을 때 로컬 UI 테스트를 위한 가상 통과 로직
+    // Mock mode for local UI testing
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         console.warn("[Mock Mode] Supabase URL/Key missing. Simulating successful signup for UI testing.");
         redirect("/dashboard");
