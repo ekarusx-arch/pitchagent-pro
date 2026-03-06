@@ -10,31 +10,35 @@ export default function RefundPage() {
                 <h1 className="text-4xl font-bold tracking-tight">Refund Policy</h1>
                 <p className="text-gray-400">Last updated: March 6, 2026</p>
 
+                <p className="text-gray-300 leading-relaxed">
+                    PitchAgent Pro is operated by <strong>Daehyun Yoon</strong>.
+                </p>
+
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold text-purple-100">1. Refund Eligibility</h2>
+                    <h2 className="text-2xl font-semibold text-purple-100">1. 14-Day Refund Policy</h2>
                     <p className="text-gray-300 leading-relaxed">
-                        Due to the nature of AI-generated content and the immediate costs associated with AI processing, refunds are generally not provided once a generation has been completed.
+                        We offer a <strong>14-day money-back guarantee</strong>. If you are not satisfied with our service for any reason, you can request a full refund within 14 days of your initial purchase or subscription date.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold text-purple-100">2. Subscription Cancellation</h2>
+                    <h2 className="text-2xl font-semibold text-purple-100">2. Refund Request Process</h2>
                     <p className="text-gray-300 leading-relaxed">
-                        You can cancel your subscription at any time. Your access will continue until the end of the current billing cycle. No partial refunds are provided for unused time.
+                        To request a refund, please contact us at our support email with your account information. We will process your refund within 5-10 business days.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold text-purple-100">3. Technical Issues</h2>
+                    <h2 className="text-2xl font-semibold text-purple-100">3. Subscription Cancellation</h2>
                     <p className="text-gray-300 leading-relaxed">
-                        If you experience a technical failure that prevents you from receiving your pitch deck, please contact us within 7 days for a credit adjustment or refund consideration.
+                        You can cancel your subscription at any time. If you cancel after the 14-day refund window, your access will continue until the end of the current billing cycle, and no partial refunds will be provided.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-semibold text-purple-100">4. How to Request</h2>
+                    <h2 className="text-2xl font-semibold text-purple-100">4. Contact Us</h2>
                     <p className="text-gray-300 leading-relaxed">
-                        All refund requests must be sent to our support email with your account details and reasoning.
+                        If you have any questions about our Refund Policy or encounter technical issues, please reach out to us. We are here to help.
                     </p>
                 </section>
             </div>

@@ -13,7 +13,7 @@ export default function TermsPage() {
                 <section className="space-y-4">
                     <h2 className="text-2xl font-semibold text-purple-100">1. Agreement to Terms</h2>
                     <p className="text-gray-300 leading-relaxed">
-                        By accessing or using PitchAgent Pro, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
+                        PitchAgent Pro is operated by <strong>Daehyun Yoon</strong>. By accessing or using our service, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
                     </p>
                 </section>
 

@@ -112,9 +112,10 @@ export async function POST(req: Request) {
 
         // 3. AI Generation call
         const { object } = await generateObject({
-            model: google("gemini-2.0-flash"), // Use the latest Gemini 2.0 Flash for superior performance and reasoning
+            model: google("gemini-2.5-flash"), // Use Gemini 2.5 Flash for optimal performance in 2026
             schema: pitchSchema,
             system: systemPrompt,
+            maxRetries: 3, // Automatically retry up to 3 times on transient errors
             prompt: `
       User Context/Portfolio: 
       "${context}"
