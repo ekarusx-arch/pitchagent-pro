@@ -87,7 +87,7 @@ export default function Home() {
 
           {/* Sub-headline */}
           <p className="text-[17px] text-slate-400 mb-10 max-w-xl leading-relaxed">
-            Paste a target URL. 4 specialized AI agents analyze their business,<br className="hidden md:block" />
+            Paste a target URL. 4 specialized AI agents analyze their business, <br className="hidden md:block" />
             find the perfect angle, and write a hyper-personalized pitch in under 3 minutes.
           </p>
 

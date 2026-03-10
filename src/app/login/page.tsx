@@ -38,6 +38,7 @@ function LoginForm() {
                         required
                         className="w-full bg-background border border-border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-slate-600"
                         placeholder="you@example.com"
+                        autoComplete="email"
                     />
                 </div>
                 <div className="space-y-2 mb-6">
@@ -54,6 +55,7 @@ function LoginForm() {
                         required
                         className="w-full bg-background border border-border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-slate-600"
                         placeholder="••••••••"
+                        autoComplete="current-password"
                     />
                 </div>
 

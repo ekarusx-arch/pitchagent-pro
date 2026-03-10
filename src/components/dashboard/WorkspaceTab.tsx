@@ -224,57 +224,58 @@ export function WorkspaceTab({
                 {step === "result" && result && (
                     <motion.div
                         key="result"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         className="max-w-[1400px] mx-auto w-full space-y-12 relative pb-20"
                     >
                         {/* Header Section */}
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+                        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
                             <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/10 border border-white/20">
-                                    <CheckCircle2 className="w-9 h-9 text-white" />
+                                <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-glow relative overflow-hidden group">
+                                    <div className="absolute inset-0 bg-primary/20 animate-pulse group-hover:bg-primary/30 transition-colors" />
+                                    <Sparkles className="w-8 h-8 text-primary relative z-10" />
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-1.5">
                                     <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        <p className="text-slate-500 font-black tracking-widest text-[10px] uppercase">Pitch Optimized</p>
+                                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
+                                        <p className="text-emerald-500 font-black tracking-[0.2em] text-[10px] uppercase">Intelligence Synthesis Complete</p>
                                     </div>
-                                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-                                        Final <span className="text-primary italic">Blueprint</span>
+                                    <h1 className="text-5xl font-black text-white tracking-tighter leading-tight">
+                                        Strategic <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent italic">Blueprint</span>
                                     </h1>
                                 </div>
                             </div>
 
                             <div className="flex flex-wrap items-center gap-4">
-                                <div className="flex glass-card p-1.5 rounded-2xl shadow-2xl">
+                                <div className="flex bg-slate-900/40 backdrop-blur-xl border border-white/5 p-1.5 rounded-2xl overflow-hidden shadow-2xl">
                                     <button
                                         onClick={handleDownloadPDF}
-                                        className="px-6 py-3 rounded-xl bg-slate-100 text-slate-950 font-black text-xs uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2.5 shadow-xl"
+                                        className="px-6 py-3 rounded-xl bg-white text-slate-950 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-2.5 shadow-lg active:scale-95"
                                     >
-                                        <FileDown className="w-4 h-4" /> PDF
+                                        <FileDown className="w-4 h-4" /> Download Report
                                     </button>
                                     <button
                                         onClick={handleComposeGmail}
-                                        className="px-5 py-3 rounded-xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-white transition-all flex items-center gap-2.5"
+                                        className="px-5 py-3 rounded-xl text-slate-400 font-bold text-[11px] uppercase tracking-widest hover:text-white transition-all flex items-center gap-2.5 active:scale-95"
                                     >
                                         <Mail className="w-4 h-4" /> Gmail
                                     </button>
                                     <button
                                         onClick={copyToClipboard}
-                                        className="px-5 py-3 rounded-xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-white transition-all flex items-center gap-2.5"
+                                        className={`px-5 py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all flex items-center gap-2.5 active:scale-95 ${isCopied ? 'text-emerald-400 bg-emerald-400/10' : 'text-slate-400 hover:text-white'}`}
                                     >
-                                        {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                                        {isCopied ? 'Copied' : 'Copy'}
+                                        {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                        {isCopied ? 'Copied' : 'Copy Text'}
                                     </button>
                                 </div>
 
-                                <div className="flex glass-card p-1.5 rounded-2xl shadow-2xl">
+                                <div className="flex bg-slate-900/40 backdrop-blur-xl border border-white/5 p-1.5 rounded-2xl overflow-hidden shadow-2xl">
                                     <button
                                         onClick={() => {
                                             const text = encodeURIComponent("Just generated a hyper-personalized cold email pitch with PitchAgent Pro 🚀 pitchagent-pro.vercel.app");
                                             window.open(`https://twitter.com/intent/tweet?text=${text}`, "_blank");
                                         }}
-                                        className="px-4 py-3 rounded-xl text-slate-400 hover:text-white transition-all"
+                                        className="px-4 py-3 rounded-xl text-slate-400 hover:text-white transition-all active:scale-90"
                                     >
                                         <Twitter className="w-4 h-4" />
                                     </button>
@@ -284,7 +285,7 @@ export function WorkspaceTab({
                                             const summary = encodeURIComponent("I used PitchAgent Pro's AI agents to generate a hyper-personalized cold email pitch in under 3 minutes.");
                                             window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&summary=${summary}`, "_blank");
                                         }}
-                                        className="px-4 py-3 rounded-xl text-slate-400 hover:text-white transition-all"
+                                        className="px-4 py-3 rounded-xl text-slate-400 hover:text-white transition-all active:scale-90"
                                     >
                                         <Linkedin className="w-4 h-4" />
                                     </button>
@@ -295,18 +296,47 @@ export function WorkspaceTab({
                         <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
                             {/* Main Pitch Card */}
                             <div className="xl:col-span-8 space-y-10">
-                                <div className="glass-card rounded-[40px] p-8 md:p-16 shadow-inner relative overflow-hidden group border border-white/10">
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full -mr-20 -mt-20 group-hover:bg-primary/10 transition-colors duration-1000" />
+                                <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[48px] p-10 md:p-20 shadow-[0_32px_128px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden group border border-white/10">
+                                    {/* Subdued Gradient Overlays */}
+                                    <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-primary/5 blur-[120px] rounded-full -mr-[10rem] -mt-[10rem] group-hover:bg-primary/10 transition-colors duration-1000" />
+                                    <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-accent/5 blur-[100px] rounded-full -ml-[12rem] -mb-[12rem]" />
+
+                                    {/* Document Header Line */}
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-16 pb-8 border-b border-white/5 relative z-10">
+                                        <div className="space-y-1">
+                                            <p className="text-primary font-black text-[10px] tracking-[0.3em] uppercase">Private & Confidential</p>
+                                            <h3 className="text-xl font-bold text-white tracking-tight">Personalized Outreach Narrative</h3>
+                                        </div>
+                                        <div className="flex items-center gap-6 text-slate-500 font-bold text-[10px] uppercase tracking-widest whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </div>
+                                            <div className="flex items-center gap-2 border-l border-white/10 pl-6">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                                Strategic Blueprint
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div className="prose prose-invert max-w-none relative z-10">
-                                        <div className="whitespace-pre-wrap text-slate-200 text-lg md:text-2xl leading-[1.8] font-serif tracking-tight selection:bg-primary/40 selection:text-white italic opacity-95">
+                                        <div className="whitespace-pre-wrap text-slate-200 text-lg md:text-2xl leading-[1.85] font-serif tracking-tight selection:bg-primary/40 selection:text-white opacity-95">
                                             {result.pitch.split(/(\[.*?\])/).map((part, i) => (
                                                 part.startsWith('[') && part.endsWith(']') ? (
-                                                    <span key={i} className="px-3 py-1 rounded-lg bg-primary/15 text-primary border border-primary/20 font-sans not-italic text-sm align-middle mx-1 font-black uppercase tracking-widest shadow-sm">
-                                                        {part}
+                                                    <span key={i} className="px-3 py-1 rounded-xl bg-white/5 text-primary border border-primary/30 font-sans not-italic text-[13px] md:text-sm align-middle mx-1 font-black uppercase tracking-[0.15em] shadow-inner backdrop-blur-sm group/tag hover:bg-primary/10 transition-colors cursor-help">
+                                                        {part.replace(/[\[\]]/g, '')}
                                                     </span>
                                                 ) : part
                                             ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Subtle Footer Watermark */}
+                                    <div className="mt-20 pt-10 border-t border-white/5 flex items-center justify-between opacity-30 select-none grayscale">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Prepared by AI Agents</p>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-[1px] bg-slate-700" />
+                                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">PitchAgent Pro</p>
                                         </div>
                                     </div>
                                 </div>
@@ -318,9 +348,9 @@ export function WorkspaceTab({
                                             setContext("");
                                             setTargetUrl("");
                                         }}
-                                        className="group flex items-center gap-3 text-slate-500 hover:text-white transition-all text-[11px] font-black uppercase tracking-[0.2em] px-8 py-4 rounded-full border border-white/5 hover:border-white/10 hover:bg-white/5 shadow-sm"
+                                        className="group flex items-center gap-4 text-slate-500 hover:text-white transition-all text-[11px] font-black uppercase tracking-[0.25em] px-10 py-5 rounded-2xl border border-white/5 hover:border-white/10 hover:bg-white/5 shadow-sm active:scale-95"
                                     >
-                                        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1.5" />
+                                        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-2" />
                                         Initialize New Campaign
                                     </button>
                                 </div>
