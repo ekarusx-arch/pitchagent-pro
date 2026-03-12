@@ -64,7 +64,11 @@ export function DashboardHeader({
                         className="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-white/5 transition-all border border-transparent hover:border-white/5 group"
                     >
                         <div className="w-9 h-9 rounded-full bg-slate-800 border-2 border-primary/20 flex items-center justify-center overflow-hidden shadow-glow group-hover:border-primary/40 transition-all">
-                            {profile?.email ? (
+                            {profile?.full_name ? (
+                                <div className="w-full h-full flex items-center justify-center text-xs font-black text-white bg-gradient-to-br from-primary/40 to-accent/40">
+                                    {profile.full_name[0].toUpperCase()}
+                                </div>
+                            ) : profile?.email ? (
                                 <div className="w-full h-full flex items-center justify-center text-xs font-black text-white bg-gradient-to-br from-primary/40 to-accent/40">
                                     {profile.email[0].toUpperCase()}
                                 </div>
@@ -85,7 +89,12 @@ export function DashboardHeader({
                             >
                                 <div className="px-4 py-3 border-b border-white/5 mb-2">
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Signed in as</p>
-                                    <p className="text-xs font-bold text-white truncate">{profile?.email}</p>
+                                    <p className="text-xs font-bold text-white truncate">
+                                        {profile?.full_name || profile?.email || "User"}
+                                    </p>
+                                    {profile?.full_name && (
+                                        <p className="text-[10px] text-slate-500 truncate mt-0.5">{profile.email}</p>
+                                    )}
                                 </div>
 
                                 <button
@@ -101,7 +110,7 @@ export function DashboardHeader({
 
                                 <button
                                     onClick={() => {
-                                        setActiveTab("profile"); // Or settings if we had one
+                                        setActiveTab("settings");
                                         setIsUserMenuOpen(false);
                                     }}
                                     className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-bold group"

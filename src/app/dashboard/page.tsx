@@ -23,7 +23,9 @@ import { UpgradeTab } from "@/components/dashboard/UpgradeTab";
 import { ShopTab } from "@/components/dashboard/ShopTab";
 import { HistoryTab } from "@/components/dashboard/HistoryTab";
 import { ProfileTab } from "@/components/dashboard/ProfileTab";
+import { SettingsTab } from "@/components/dashboard/SettingsTab";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { OnboardingModal } from "@/components/dashboard/OnboardingModal";
 
 export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState<DashboardTab>("workspace");
@@ -51,6 +53,7 @@ export default function DashboardPage() {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [onboardingCompleted, setOnboardingCompleted] = useState(false);
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         type?: "danger" | "success" | "info";
@@ -72,6 +75,17 @@ export default function DashboardPage() {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
+            // Set initial minimal profile to avoid null state issues
+            const minimalProfile: Profile = {
+                credits: 0,
+                is_pro: false,
+                subscription_plan: "Free",
+                email: user.email || "",
+                full_name: "",
+                has_onboarded: false,
+                contexts: [{ name: "Default", content: "" }]
+            };
+
             const { data, error } = await supabase
                 .from("profiles")
                 .select("*")
@@ -101,28 +115,27 @@ export default function DashboardPage() {
                     is_pro: data.is_pro || false,
                     subscription_plan: data.subscription_plan || "Free",
                     email: user.email || "",
+                    full_name: data.full_name || "",
+                    has_onboarded: data.has_onboarded === true, // Explicitly check for true
                     contexts: parsedContexts
                 });
             } else {
+                // Try to create profile if it doesn't exist
                 const defaultContexts = [{ name: "Default", content: "" }];
                 const { error: insertError } = await supabase
                     .from("profiles")
-                    .insert({
+                    .upsert({ // Use upsert instead of insert to handle existing rows
                         id: user.id,
                         email: user.email,
                         credits: 100,
                         context: JSON.stringify(defaultContexts)
-                    });
+                    }, { onConflict: 'id' });
 
-                if (!insertError) {
-                    setProfile({
-                        credits: 100,
-                        is_pro: false,
-                        subscription_plan: "Free",
-                        email: user.email || "",
-                        contexts: defaultContexts
-                    });
-                }
+                setProfile({
+                    ...minimalProfile,
+                    credits: 100,
+                    has_onboarded: false
+                });
             }
         }
     };
@@ -306,6 +319,54 @@ export default function DashboardPage() {
         }
     };
 
+    const handleOnboardingComplete = async (data: { fullName: string; specialty: string; strength: string }) => {
+        if (!profile) return;
+
+        const firstContext: ProfileContext = {
+            name: data.specialty || "My Primary Identity",
+            content: `I am a ${data.specialty}. ${data.strength}`
+        };
+
+        const updatedContexts = [firstContext];
+
+        try {
+            const { createClient } = await import("@/utils/supabase/client");
+            const supabase = createClient();
+
+            // Try updating full_name and has_onboarded. 
+            // If the columns don't exist yet, this might error, but we'll try to handle it.
+            const { error } = await supabase
+                .from("profiles")
+                .update({
+                    full_name: data.fullName,
+                    has_onboarded: true,
+                    context: updatedContexts
+                })
+                .eq("email", profile.email);
+
+            if (error) {
+                console.warn("Onboarding update failed, possibly due to missing columns:", error);
+                // Fallback: just update the context if columns are missing
+                await supabase
+                    .from("profiles")
+                    .update({ context: updatedContexts })
+                    .eq("email", profile.email);
+            }
+
+            setProfile({
+                ...profile,
+                full_name: data.fullName,
+                has_onboarded: true,
+                contexts: updatedContexts
+            });
+            setOnboardingCompleted(true);
+            setContext(firstContext.content);
+
+        } catch (error) {
+            console.error("Onboarding error:", error);
+        }
+    };
+
     const addProfile = () => {
         if (!profile) return;
         const newProfile: ProfileContext = {
@@ -361,7 +422,7 @@ export default function DashboardPage() {
                         displayMode: "overlay",
                         theme: "dark",
                         locale: "en",
-                        successUrl: window.location.href,
+                        successUrl: window.location.origin + window.location.pathname,
                     },
                     items: data.items || [{ priceId: options.priceId, quantity: 1 }],
                     customer: { email: user.email },
@@ -540,7 +601,7 @@ export default function DashboardPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 text-slate-200 selection:bg-primary/30 flex p-4 gap-8 overflow-hidden relative">
+        <main className="min-h-screen bg-slate-950 text-slate-200 selection:bg-primary/30 flex flex-col lg:flex-row p-0 lg:p-6 lg:gap-8 overflow-x-hidden relative">
             {/* Mobile Header */}
             <DashboardHeader
                 profile={profile}
@@ -562,7 +623,7 @@ export default function DashboardPage() {
                 toggleMobileMenu={toggleMobileMenu}
             />
 
-            <div className="flex-1 max-h-[calc(100vh-2rem)] overflow-y-auto custom-scrollbar lg:pr-4 pt-20 lg:pt-24">
+            <div className="flex-1 w-full max-h-screen lg:max-h-[calc(100vh-3rem)] overflow-y-auto custom-scrollbar px-4 lg:px-0 lg:pr-4 pt-20 lg:pt-0">
                 <AnimatePresence mode="wait">
                     {activeTab === "workspace" && (
                         <WorkspaceTab
@@ -580,6 +641,7 @@ export default function DashboardPage() {
                             handleDeploy={handleDeploy}
                             activeAgentStep={activeAgentStep}
                             result={result}
+                            setResult={setResult}
                             isCopied={isCopied}
                             copyToClipboard={copyToClipboard}
                             handleDownloadPDF={() => handleDownloadPDF()}
@@ -631,8 +693,21 @@ export default function DashboardPage() {
                             setActiveTab={setActiveTab}
                         />
                     )}
+
+                    {activeTab === "settings" && (
+                        <SettingsTab
+                            key="settings"
+                            profile={profile}
+                            setActiveTab={setActiveTab}
+                        />
+                    )}
                 </AnimatePresence>
             </div>
+
+            <OnboardingModal
+                isOpen={profile !== null && profile.has_onboarded !== true && !onboardingCompleted}
+                onComplete={handleOnboardingComplete}
+            />
 
             <ConfirmModal
                 isOpen={!!confirmModal}

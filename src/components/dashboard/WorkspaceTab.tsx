@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MessageSquare,
@@ -13,7 +14,10 @@ import {
     Check,
     Twitter,
     Linkedin,
-    ArrowLeft
+    ArrowLeft,
+    Pencil,
+    X,
+    Save
 } from "lucide-react";
 import { TemplateId, TEMPLATES, AGENT_STEPS } from "@/app/dashboard/types";
 
@@ -31,6 +35,7 @@ export type WorkspaceTabProps = {
     handleDeploy: () => void;
     activeAgentStep: number;
     result: { pitch: string; insights: string[] } | null;
+    setResult: (result: { pitch: string; insights: string[] } | null) => void;
     isCopied: boolean;
     copyToClipboard: () => void;
     handleDownloadPDF: () => void;
@@ -52,12 +57,26 @@ export function WorkspaceTab({
     handleDeploy,
     activeAgentStep,
     result,
+    setResult,
     isCopied,
     copyToClipboard,
     handleDownloadPDF,
     handleComposeGmail,
     loadExample
 }: WorkspaceTabProps) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedPitch, setEditedPitch] = useState(result?.pitch || "");
+
+    useEffect(() => {
+        if (result?.pitch) setEditedPitch(result.pitch);
+    }, [result?.pitch]);
+
+    const handleSave = () => {
+        if (result) {
+            setResult({ ...result, pitch: editedPitch });
+            setIsEditing(false);
+        }
+    };
     return (
         <motion.div
             key="workspace"
@@ -76,11 +95,11 @@ export function WorkspaceTab({
                         exit={{ opacity: 0, scale: 0.98 }}
                         className="max-w-4xl lg:max-w-5xl mx-auto w-full mt-4 md:mt-10"
                     >
-                        <div className="mb-12">
-                            <h1 className="text-5xl font-black mb-4 tracking-tighter text-white">
+                        <div className="mb-8 md:mb-12">
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 md:mb-4 tracking-tighter text-white">
                                 New <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent italic">Campaign</span>
                             </h1>
-                            <p className="text-slate-400 text-lg font-medium">Orchestrate specialized AI agents for deep research and perfect pitching.</p>
+                            <p className="text-slate-400 text-base sm:text-lg font-medium">Orchestrate specialized AI agents for deep research and perfect pitching.</p>
                         </div>
 
                         <div className="space-y-10">
@@ -93,7 +112,7 @@ export function WorkspaceTab({
                                     value={context}
                                     onChange={(e) => setContext(e.target.value)}
                                     placeholder="Briefly describe your expertise, key achievements, and the specific value you provide..."
-                                    className="w-full h-44 bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl p-7 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all shadow-inner placeholder:text-slate-600 leading-relaxed font-medium resize-none text-slate-200"
+                                    className="w-full h-40 sm:h-44 bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-7 text-sm sm:text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all shadow-inner placeholder:text-slate-600 leading-relaxed font-medium resize-none text-slate-200"
                                 />
                             </div>
 
@@ -117,7 +136,7 @@ export function WorkspaceTab({
                             </div>
 
                             <div className="pt-6 border-t border-white/5">
-                                <div className="grid grid-cols-2 gap-6 mb-10">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-10">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 px-1">Strategy Template</label>
                                         <select
@@ -142,11 +161,11 @@ export function WorkspaceTab({
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-5">
+                                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
                                     <button
                                         onClick={handleDeploy}
                                         disabled={!targetUrl || !context}
-                                        className="flex-1 py-5 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-[0.25em] hover:bg-indigo-500 transition-all shadow-glow hover:scale-[1.02] disabled:opacity-20 disabled:grayscale flex items-center justify-center gap-3 active:scale-95 group overflow-hidden relative"
+                                        className="w-full sm:flex-1 py-5 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-[0.25em] hover:bg-indigo-500 transition-all shadow-glow hover:scale-[1.02] disabled:opacity-20 disabled:grayscale flex items-center justify-center gap-3 active:scale-95 group overflow-hidden relative"
                                     >
                                         <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                                         <Zap className="w-4 h-4 fill-white animate-pulse" />
@@ -154,7 +173,7 @@ export function WorkspaceTab({
                                     </button>
                                     <button
                                         onClick={loadExample}
-                                        className="px-8 py-5 rounded-2xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all border border-dashed border-white/10"
+                                        className="w-full sm:w-auto px-8 py-5 rounded-2xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all border border-dashed border-white/10"
                                     >
                                         Example
                                     </button>
@@ -240,7 +259,7 @@ export function WorkspaceTab({
                                         <div className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
                                         <p className="text-emerald-500 font-black tracking-[0.2em] text-[10px] uppercase">Intelligence Synthesis Complete</p>
                                     </div>
-                                    <h1 className="text-5xl font-black text-white tracking-tighter leading-tight">
+                                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tighter leading-tight">
                                         Strategic <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent italic">Blueprint</span>
                                     </h1>
                                 </div>
@@ -266,6 +285,13 @@ export function WorkspaceTab({
                                     >
                                         {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                                         {isCopied ? 'Copied' : 'Copy Text'}
+                                    </button>
+                                    <button
+                                        onClick={() => setIsEditing(!isEditing)}
+                                        className={`px-5 py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all flex items-center gap-2.5 active:scale-95 ${isEditing ? 'text-primary bg-primary/10' : 'text-slate-400 hover:text-white'}`}
+                                    >
+                                        {isEditing ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                                        {isEditing ? 'Cancel Edit' : 'Edit Pitch'}
                                     </button>
                                 </div>
 
@@ -296,9 +322,9 @@ export function WorkspaceTab({
                         <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
                             {/* Main Pitch Card */}
                             <div className="xl:col-span-8 space-y-10">
-                                <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[48px] p-10 md:p-20 shadow-[0_32px_128px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden group border border-white/10">
+                                <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[32px] md:rounded-[48px] p-8 sm:p-12 md:p-20 shadow-[0_32px_128px_-12px_rgba(0,0,0,0.6)] relative overflow-hidden group border border-white/10">
                                     {/* Subdued Gradient Overlays */}
-                                    <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-primary/5 blur-[120px] rounded-full -mr-[10rem] -mt-[10rem] group-hover:bg-primary/10 transition-colors duration-1000" />
+                                    <div className="absolute top-0 right-0 w-[20rem] sm:w-[40rem] h-[20rem] sm:h-[40rem] bg-primary/5 blur-[80px] sm:blur-[120px] rounded-full -mr-[5rem] sm:-mr-[10rem] -mt-[5rem] sm:-mt-[10rem] group-hover:bg-primary/10 transition-colors duration-1000" />
                                     <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-accent/5 blur-[100px] rounded-full -ml-[12rem] -mb-[12rem]" />
 
                                     {/* Document Header Line */}
@@ -320,15 +346,34 @@ export function WorkspaceTab({
                                     </div>
 
                                     <div className="prose prose-invert max-w-none relative z-10">
-                                        <div className="whitespace-pre-wrap text-slate-200 text-lg md:text-2xl leading-[1.85] font-serif tracking-tight selection:bg-primary/40 selection:text-white opacity-95">
-                                            {result.pitch.split(/(\[.*?\])/).map((part, i) => (
-                                                part.startsWith('[') && part.endsWith(']') ? (
-                                                    <span key={i} className="px-3 py-1 rounded-xl bg-white/5 text-primary border border-primary/30 font-sans not-italic text-[13px] md:text-sm align-middle mx-1 font-black uppercase tracking-[0.15em] shadow-inner backdrop-blur-sm group/tag hover:bg-primary/10 transition-colors cursor-help">
-                                                        {part.replace(/[\[\]]/g, '')}
-                                                    </span>
-                                                ) : part
-                                            ))}
-                                        </div>
+                                        {isEditing ? (
+                                            <div className="space-y-6">
+                                                <textarea
+                                                    value={editedPitch}
+                                                    onChange={(e) => setEditedPitch(e.target.value)}
+                                                    className="w-full h-[600px] bg-slate-950/50 border border-white/10 rounded-[32px] px-10 py-10 text-slate-200 text-lg md:text-2xl leading-[1.85] font-serif tracking-tight focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none custom-scrollbar shadow-inner"
+                                                    placeholder="Edit your strategic pitch here..."
+                                                />
+                                                <div className="flex justify-end p-2">
+                                                    <button
+                                                        onClick={handleSave}
+                                                        className="px-10 py-5 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest hover:bg-primary/80 transition-all flex items-center gap-3 shadow-glow hover:scale-[1.02] active:scale-[0.98]"
+                                                    >
+                                                        <Save className="w-5 h-5" /> Save Changes
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="whitespace-pre-wrap text-slate-200 text-lg md:text-2xl leading-[1.85] font-serif tracking-tight selection:bg-primary/40 selection:text-white opacity-95">
+                                                {result.pitch.split(/(\[.*?\])/).map((part, i) => (
+                                                    part.startsWith('[') && part.endsWith(']') ? (
+                                                        <span key={i} className="px-3 py-1 rounded-xl bg-white/5 text-primary border border-primary/30 font-sans not-italic text-[13px] md:text-sm align-middle mx-1 font-black uppercase tracking-[0.15em] shadow-inner backdrop-blur-sm group/tag hover:bg-primary/10 transition-colors cursor-help">
+                                                            {part.replace(/[\[\]]/g, '')}
+                                                        </span>
+                                                    ) : part
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Subtle Footer Watermark */}

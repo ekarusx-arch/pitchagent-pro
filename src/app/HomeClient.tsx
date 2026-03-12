@@ -33,13 +33,13 @@ export default function Home() {
 
       {/* Navigation */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-            <Zap className="w-4 h-4 text-white" />
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
           </div>
-          <span className="text-[15px] font-semibold tracking-tight">PitchAgent Pro</span>
+          <span className="text-sm sm:text-[15px] font-semibold tracking-tight">PitchAgent Pro</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <Link
             href="#how-it-works"
             className="hidden md:block text-sm text-slate-500 hover:text-slate-200 px-4 py-2 rounded-lg transition-colors"
@@ -54,7 +54,7 @@ export default function Home() {
           </Link>
           <Link
             href="/dashboard"
-            className="text-sm px-4 py-2 rounded-lg border border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200 transition-all ml-2"
+            className="text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg border border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200 transition-all"
           >
             Sign in
           </Link>
@@ -77,7 +77,7 @@ export default function Home() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-[68px] font-extrabold tracking-tight leading-[1.08] mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-[68px] font-extrabold tracking-tight leading-[1.1] mb-6">
             Close $10k clients with{" "}
             <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 text-glow">
@@ -117,16 +117,16 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="mt-20 flex flex-wrap items-center justify-center gap-x-12 gap-y-5 py-7 w-full max-w-2xl border-y border-slate-800/40 bg-slate-900/10 backdrop-blur-sm"
+          className="mt-16 sm:mt-20 flex flex-wrap items-center justify-center gap-x-8 sm:gap-x-12 gap-y-6 py-8 w-full max-w-2xl border-y border-slate-800/40 bg-slate-900/10 backdrop-blur-sm px-4"
         >
           {[
             { value: "3 min", label: "avg. generation" },
             { value: "4 agents", label: "working in parallel" },
             { value: "1,200+", label: "emails generated" },
           ].map(({ value, label }, i) => (
-            <div key={i} className="flex flex-col items-center gap-0.5">
-              <span className="text-xl font-bold text-white tracking-tight">{value}</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">{label}</span>
+            <div key={i} className="flex flex-col items-center gap-1 min-w-[100px]">
+              <span className="text-xl sm:text-2xl font-black text-white tracking-tight">{value}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 text-center">{label}</span>
             </div>
           ))}
         </motion.div>
@@ -139,21 +139,21 @@ export default function Home() {
           className="mt-16 w-full flex flex-col items-center gap-8"
         >
           <p className="text-[11px] font-bold text-slate-700 uppercase tracking-[0.2em]">Trusted by hyper-growth teams</p>
-          <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-            <div className="flex items-center gap-2 font-bold text-lg text-slate-400">
-              <div className="w-5 h-5 rounded bg-slate-700" /> VERCEL
+          <div className="flex flex-wrap justify-center items-center gap-x-8 sm:gap-x-12 gap-y-6 sm:gap-y-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-700 px-4">
+            <div className="flex items-center gap-2 font-bold text-base sm:text-lg text-slate-400">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 rounded bg-slate-700" /> VERCEL
             </div>
-            <div className="flex items-center gap-2 font-bold text-lg text-slate-400">
-              <div className="w-5 h-5 rounded-full bg-slate-700" /> NOTION
+            <div className="flex items-center gap-2 font-bold text-base sm:text-lg text-slate-400">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-700" /> NOTION
             </div>
-            <div className="flex items-center gap-2 font-bold text-lg text-slate-400">
-              <div className="w-5 h-5 rotate-45 bg-slate-700" /> PADDLE
+            <div className="flex items-center gap-2 font-bold text-base sm:text-lg text-slate-400">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 rotate-45 bg-slate-700" /> PADDLE
             </div>
-            <div className="flex items-center gap-2 font-bold text-lg text-slate-400">
-              <div className="w-5 h-5 rounded-sm bg-slate-700" /> LINEAR
+            <div className="flex items-center gap-2 font-bold text-base sm:text-lg text-slate-400">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-sm bg-slate-700" /> LINEAR
             </div>
-            <div className="flex items-center gap-2 font-bold text-lg text-slate-400">
-              <div className="w-5 h-5 rounded-full border-2 border-slate-700" /> FRAMER
+            <div className="flex items-center gap-2 font-bold text-base sm:text-lg text-slate-400">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-slate-700" /> FRAMER
             </div>
           </div>
         </motion.div>

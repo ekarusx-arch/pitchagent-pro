@@ -21,7 +21,7 @@ export const TEMPLATES = [
 
 export type TemplateId = typeof TEMPLATES[number]["id"];
 
-export type DashboardTab = "workspace" | "upgrade" | "shop" | "history" | "profile";
+export type DashboardTab = "workspace" | "upgrade" | "shop" | "history" | "profile" | "settings";
 
 export type PitchHistoryItem = {
     id: string;
@@ -42,5 +42,7 @@ export type Profile = {
     is_pro: boolean;
     subscription_plan: string;
     email: string;
+    full_name?: string;
+    has_onboarded?: boolean;
     contexts: ProfileContext[];
 };

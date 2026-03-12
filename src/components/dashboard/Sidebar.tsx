@@ -10,7 +10,8 @@ import {
     LogOut,
     Sparkles,
     ShieldCheck,
-    X
+    X,
+    Settings
 } from "lucide-react";
 import { DashboardTab, Profile } from "@/app/dashboard/types";
 
@@ -30,6 +31,7 @@ export function Sidebar({ activeTab, setActiveTab, profile, handleSignOut, isMob
         { id: "shop", label: "Resource Shop", icon: Package },
         { id: "history", label: "History", icon: HistoryIcon },
         { id: "profile", label: "Profiles", icon: Users },
+        { id: "settings", label: "Settings", icon: Settings },
     ];
 
     return (
@@ -48,8 +50,8 @@ export function Sidebar({ activeTab, setActiveTab, profile, handleSignOut, isMob
             </AnimatePresence>
 
             <aside className={`
-                w-80 h-[calc(100vh-2rem)] sticky top-4 flex flex-col bg-slate-950/40 backdrop-blur-2xl border border-white/10 rounded-[32px] p-8 shadow-2xl overflow-hidden group z-[60]
-                fixed lg:sticky transition-transform duration-500 ease-out
+                w-80 max-w-[calc(100vw-2rem)] h-[calc(100vh-3rem)] flex flex-col bg-slate-950/40 backdrop-blur-2xl border border-white/10 rounded-[32px] p-8 shadow-2xl overflow-hidden group z-[60]
+                fixed lg:sticky top-4 lg:top-0 transition-transform duration-500 ease-out
                 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
                 left-4 lg:left-0
             `}>
